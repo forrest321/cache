@@ -1,4 +1,4 @@
-package cache
+package common
 
 import (
 	"encoding/json"
@@ -115,7 +115,8 @@ func LoadConfig(filePath string) (*Config, error) {
 		}
 	}
 
-	log.Printf("Loaded Config: %+v", config)
+	//TODO: add log levels
+	//log.Printf("Loaded Config: %+v", config)
 
 	return config, nil
 }

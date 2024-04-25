@@ -1,9 +1,8 @@
 package store
 
 import (
+	"github.com/forrest321/cache/common"
 	"github.com/forrest321/cache/common/interfaces"
-	"log"
-	"os"
 	"sync"
 	"time"
 )
@@ -14,16 +13,13 @@ type InMemoryStore struct {
 
 var _ interfaces.Store = (*InMemoryStore)(nil)
 
-func NewInMemoryStore(cleanupType string, logger interfaces.Logger) *InMemoryStore {
-	if logger == nil {
-		logger = log.New(os.Stdout, "cache: ", log.LstdFlags)
-	}
+func NewInMemoryStore(config *common.Config, logger interfaces.Logger) *InMemoryStore {
 	return &InMemoryStore{
 		Cache: Cache{
-			entries:     make(map[string]Entry),
-			lock:        sync.RWMutex{},
-			logger:      logger,
-			cleanupType: cleanupType,
+			entries: make(map[string]Entry),
+			lock:    sync.RWMutex{},
+			logger:  logger,
+			config:  *config,
 		},
 	}
 }
@@ -37,7 +33,7 @@ func (s *InMemoryStore) Get(key string) ([]byte, bool) {
 		if entry.expiresAt.After(time.Now()) {
 			return entry.value, true
 		}
-		if s.cleanupType == "lazy" {
+		if s.config.CleanupType == "lazy" {
 			s.lock.RUnlock()
 			s.lock.Lock()
 			delete(s.entries, string(key))
@@ -73,7 +69,7 @@ func (s *InMemoryStore) Delete(key string) {
 // The cleanupInterval parameter specifies the time interval between each cleanup operation.
 // Panic is thrown as a placeholder until the implementation is completed.
 func (s *InMemoryStore) StartCleanup(cleanupInterval time.Duration) {
-	if s.cleanupType == "active" {
+	if s.config.CleanupType == "active" {
 		ticker := time.NewTicker(cleanupInterval)
 		for range ticker.C {
 			s.lock.Lock()

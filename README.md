@@ -7,7 +7,7 @@ The Cache package provides a high-performance, flexible caching solution designe
 
 ## Features
 
-Configurable Expiration: Choose between active, lazy, or no cleanup strategies.
+Configurable Expiration: Choose between active, lazy, or none cleanup strategies.
 
 Adaptable: Ideal for standalone applications, Docker, or Kubernetes environments.
 

@@ -5,10 +5,10 @@ import "time"
 // Store represents a cache store.
 type Store interface {
 	// Set a new item in the cache that will expire after the default expiration time.
-	Set(key string, value interface{})
+	Set(key string, value []byte, expiresAt time.Time)
 
 	// Get an item from the cache. Returns the item or nil, and a found flag.
-	Get(key string) (interface{}, bool)
+	Get(key string) ([]byte, bool)
 
 	// Delete an item from the cache. Does nothing if the key is not in the cache.
 	Delete(key string)

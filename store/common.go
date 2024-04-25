@@ -1,7 +1,6 @@
 package store
 
 import (
-	"github.com/forrest321/cache"
 	"github.com/forrest321/cache/common/interfaces"
 	"sync"
 	"time"
@@ -15,8 +14,8 @@ type Entry struct {
 
 // Cache struct for the caching system
 type Cache struct {
-	config  *cache.Config
-	entries map[string]Entry
-	lock    sync.RWMutex
-	logger  interfaces.Logger
+	entries     map[string]Entry
+	lock        sync.RWMutex
+	logger      interfaces.Logger
+	cleanupType string
 }

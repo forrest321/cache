@@ -9,15 +9,17 @@ import (
 )
 
 const (
-	CacheTickerTime    = "CACHE_TICKER_TIME"
-	CacheByteSliceSize = "CACHE_BYTE_SLICE_SIZE"
-	CacheDefaultTTL    = "CACHE_DEFAULT_TTL"
-	CacheCleanupType   = "CACHE_CLEANUP_TYPE"
+	EnvTickerTime    = "CACHE_TICKER_TIME"
+	EnvByteSliceSize = "CACHE_BYTE_SLICE_SIZE"
+	EnvDefaultTTL    = "CACHE_DEFAULT_TTL"
+	EnvCleanupType   = "CACHE_CLEANUP_TYPE"
+	EnvStoreType     = "CACHE_STORE_TYPE"
 
 	DefaultByteSliceSize = 1024
 	DefaultTickerTime    = 20 * time.Second
 	DefaultTTL           = 30 * time.Minute
-	DefaultCleanupType   = "active"
+	DefaultCleanupType   = Active
+	DefaultStoreType     = InMemoryStoreType
 )
 
 type CleanupType string
@@ -28,11 +30,21 @@ const (
 	None   CleanupType = "none"
 )
 
+type StoreType string
+
+const (
+	InMemoryStoreType StoreType = "inmemory"
+	// Here is where will add store types later
+	// DiskStoreType   StoreType = "disk"
+	// RemoteStoreType StoreType = "remote"
+)
+
 type Config struct {
 	TickerTime    time.Duration `json:"ticker_time"`
 	ByteSliceSize int           `json:"byte_slice_size"`
 	DefaultTTL    time.Duration `json:"default_ttl"`
 	CleanupType   CleanupType   `json:"cleanup_type"`
+	StoreType     StoreType     `json:"store_type"`
 }
 
 func DefaultConfig() *Config {
@@ -40,7 +52,8 @@ func DefaultConfig() *Config {
 		TickerTime:    DefaultTickerTime,
 		ByteSliceSize: DefaultByteSliceSize,
 		DefaultTTL:    DefaultTTL,
-		CleanupType:   Active,
+		CleanupType:   DefaultCleanupType,
+		StoreType:     DefaultStoreType,
 	}
 }
 
@@ -63,23 +76,43 @@ func LoadConfig(filePath string) (*Config, error) {
 	}
 
 	// Override config with environment variables if they exist
-	if envVar := os.Getenv(CacheTickerTime); envVar != "" {
+	if envVar := os.Getenv(EnvTickerTime); envVar != "" {
 		if duration, err := time.ParseDuration(envVar); err == nil {
 			config.TickerTime = duration
 		}
 	}
-	if envVar := os.Getenv(CacheByteSliceSize); envVar != "" {
+	if envVar := os.Getenv(EnvByteSliceSize); envVar != "" {
 		if size, err := strconv.Atoi(envVar); err == nil {
 			config.ByteSliceSize = size
 		}
 	}
-	if envVar := os.Getenv(CacheDefaultTTL); envVar != "" {
+	if envVar := os.Getenv(EnvDefaultTTL); envVar != "" {
 		if duration, err := time.ParseDuration(envVar); err == nil {
 			config.DefaultTTL = duration
 		}
 	}
-	if envVar := os.Getenv(CacheCleanupType); envVar != "" {
-		config.CleanupType = CleanupType(envVar)
+	if envVar := os.Getenv(EnvCleanupType); envVar != "" {
+		envCleanType := CleanupType(envVar)
+
+		switch envCleanType {
+		case Active, Lazy, None:
+			config.CleanupType = envCleanType
+		default:
+			log.Printf("Invalid cleanup type provided: %v", envVar)
+			config.CleanupType = Lazy
+		}
+	}
+	if envVar := os.Getenv(EnvStoreType); envVar != "" {
+		envStoreType := StoreType(envVar)
+
+		//When adding more store types, create more cases here
+		switch envStoreType {
+		case InMemoryStoreType:
+			config.StoreType = envStoreType
+		default:
+			log.Printf("Invalid store type provided: %v", envVar)
+			config.StoreType = InMemoryStoreType
+		}
 	}
 
 	log.Printf("Loaded Config: %+v", config)

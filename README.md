@@ -1,5 +1,5 @@
->Notice: This package is currently under active development. It is not a finalized release, and as such, it may undergo
-significant changes, including breaking changes, as well as changes to its name and location. Please don't use it, yet!
+>Notice: DO NOT USE! This package is currently under active development. It is not a finalized release, and as such, it may undergo
+significant changes, including breaking changes, as well as changes to its name and location.
 
 # Cache
 
